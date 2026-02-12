@@ -12,15 +12,9 @@ import games.strategy.triplea.delegate.Matches;
 import games.strategy.triplea.image.UnitImageFactory;
 import games.strategy.triplea.image.UnitImageFactory.ImageKey;
 import games.strategy.triplea.ui.UiContext;
+import games.strategy.triplea.ui.mapdata.MapData;
 import games.strategy.triplea.util.TuvUtils;
-import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -41,9 +35,25 @@ public class UnitStatsTable {
     final @NonNls String strColorVeryLightOrange = "FEECE2";
     final @NonNls String strColorLightGrey = "BDBDBD";
     final @NonNls String strColorGrey = "ABABAB";
+
+    final MapData mapData = uiContext.getMapData();
+    final String hiddenPlayersProperty = mapData.getProperty("players.not.to.display");
+
+    final Set<String> hiddenPlayers =
+        hiddenPlayersProperty == null || hiddenPlayersProperty.isBlank()
+            ? Collections.emptySet()
+            : Arrays.stream(hiddenPlayersProperty.split(","))
+                .map(String::trim)
+                .collect(Collectors.toSet());
+
     for (final Map.Entry<GamePlayer, List<UnitType>> entry : playerUnitTypes.entrySet()) {
       int lineIndex = 0;
       final GamePlayer player = entry.getKey();
+
+      if (player != null && hiddenPlayers.contains(player.getName())) {
+        continue;
+      }
+
       hints.append("<p><table border=\"1\" bgcolor=\"" + strColorGrey + "\">");
       hints
           .append(
@@ -60,8 +70,8 @@ public class UnitStatsTable {
           lineIndex++;
           addUnitStatsTableLineColored(
               hints,
-              MessageFormat.format(
-                  "<td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td>",
+              String.format(
+                  "<td>%s</td><td>%s</td><td>%s</td><td>%s</td>",
                   getUnitImageUrl(ut, player, uiContext),
                   ut.getName(),
                   costs.get(player).get(ut).toStringForHtml(),
