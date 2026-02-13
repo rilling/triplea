@@ -40,4 +40,45 @@ final class MapDataTest {
       assertThat(getProperty(), is(DEFAULT_VALUE));
     }
   }
+
+  @Nested
+  final class ShouldShowPlayerTest {
+    private static final String PROPERTY_KEY = "dont_show_players";
+
+    private final Properties properties = new Properties();
+
+    @Test
+    void shouldShowPlayerWhenPropertyNotSet() {
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Germany"), is(true));
+    }
+
+    @Test
+    void shouldHidePlayerWhenInExclusionList() {
+      properties.setProperty(PROPERTY_KEY, "Weather,NaturalDisaster");
+
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Weather"), is(false));
+    }
+
+    @Test
+    void shouldShowPlayerWhenNotInExclusionList() {
+      properties.setProperty(PROPERTY_KEY, "Weather,NaturalDisaster");
+
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Germany"), is(true));
+    }
+
+    @Test
+    void shouldHideMultiplePlayersInExclusionList() {
+      properties.setProperty(PROPERTY_KEY, "Weather,NaturalDisaster,SpecialNeutral");
+
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "NaturalDisaster"),
+          is(false));
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "SpecialNeutral"),
+          is(false));
+    }
+  }
 }

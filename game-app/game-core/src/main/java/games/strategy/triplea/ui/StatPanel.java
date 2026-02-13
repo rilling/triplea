@@ -112,7 +112,9 @@ class StatPanel extends JPanel implements GameDataChangeListener {
 
   private void fillPlayerIcons() {
     for (final GamePlayer p : gameData.getPlayerList().getPlayers()) {
-      createImageIconIfNeeded(p);
+      if (uiContext.getMapData().shouldShowPlayer(p.getName())) {
+        createImageIconIfNeeded(p);
+      }
     }
   }
 
@@ -146,7 +148,10 @@ class StatPanel extends JPanel implements GameDataChangeListener {
       // copy so that the object doesn't change underneath us
       final GameData gameDataSync = StatPanel.this.gameData;
       try (GameData.Unlocker ignored = gameDataSync.acquireReadLock()) {
-        final List<GamePlayer> players = gameDataSync.getPlayerList().getSortedPlayers();
+        final List<GamePlayer> players =
+            gameDataSync.getPlayerList().getSortedPlayers().stream()
+                .filter(p -> uiContext.getMapData().shouldShowPlayer(p.getName()))
+                .toList();
         final List<String> alliances = getAlliancesToShow(gameDataSync.getAllianceTracker());
         collectedData = new String[players.size() + alliances.size()][stats.length + 1];
         int row = 0;

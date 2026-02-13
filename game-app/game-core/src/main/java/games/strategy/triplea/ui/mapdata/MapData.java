@@ -87,6 +87,7 @@ public class MapData {
   @NonNls public static final String POLYGON_FILE = "polygons.txt";
 
   @NonNls private static final String PROPERTY_DONT_DRAW_UNITS = "dont_draw_units";
+  @NonNls private static final String PROPERTY_DONT_SHOW_PLAYERS = "dont_show_players";
 
   @NonNls
   private static final String PROPERTY_MAP_SMALLMAPTERRITORYSATURATION =
@@ -147,6 +148,7 @@ public class MapData {
   private final Map<String, List<Point>> territoryEffects = new HashMap<>();
   private Set<String> undrawnUnits;
   private Set<String> undrawnTerritoriesNames;
+  private Set<String> hiddenPlayers;
   private final Map<Image, List<Point>> decorations = new HashMap<>();
   private final Map<String, Image> territoryNameImages = new HashMap<>();
   // Use a synchronized map since getTerritoryEffectImage() is called from multiple threads.
@@ -379,6 +381,31 @@ public class MapData {
       undrawnTerritoriesNames = new HashSet<>(List.of(property.split(",")));
     }
     return !undrawnTerritoriesNames.contains(territoryName);
+  }
+
+  /**
+   * Returns whether the player with the given name should be shown in the Player tab. Mapmakers can
+   * hide dummy players by listing them in the {@code dont_show_players} property in {@code
+   * map.properties}.
+   */
+  public boolean shouldShowPlayer(final String playerName) {
+    if (hiddenPlayers == null) {
+      final String property = mapProperties.getProperty(PROPERTY_DONT_SHOW_PLAYERS, "");
+      hiddenPlayers = new HashSet<>(List.of(property.split(",")));
+    }
+    return !hiddenPlayers.contains(playerName);
+  }
+
+  /**
+   * Returns true if the given name is NOT present in the comma-separated property value. This is a
+   * utility for "dont_*" style exclusion-list properties.
+   */
+  @VisibleForTesting
+  static boolean isNotInCommaSeparatedProperty(
+      final Properties properties, final String propertyKey, final String name) {
+    final String property = properties.getProperty(propertyKey, "");
+    final Set<String> excluded = new HashSet<>(List.of(property.split(",")));
+    return !excluded.contains(name);
   }
 
   public boolean getHasRelief() {
