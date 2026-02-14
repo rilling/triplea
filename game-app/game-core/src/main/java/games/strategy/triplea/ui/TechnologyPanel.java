@@ -208,7 +208,11 @@ class TechnologyPanel extends JPanel implements GameDataChangeListener {
 
     private void initColList() {
       final List<GamePlayer> players = gameData.getPlayerList().getPlayers();
-      colList = players.stream().map(GamePlayer::getName).toArray(String[]::new);
+      colList =
+          players.stream()
+              .map(GamePlayer::getName)
+              .filter(name -> uiContext == null || uiContext.getMapData().shouldShowInTech(name))
+              .toArray(String[]::new);
       Arrays.sort(colList);
     }
 
