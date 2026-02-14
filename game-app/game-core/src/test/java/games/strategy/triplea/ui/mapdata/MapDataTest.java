@@ -81,4 +81,32 @@ final class MapDataTest {
           is(false));
     }
   }
+  @Nested
+  final class ShouldShowInTechTest {
+    private static final String PROPERTY_KEY = "player.doNotShowInTechTable";
+
+    private final Properties properties = new Properties();
+
+    @Test
+    void shouldShowPlayerWhenPropertyNotSet() {
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Germany"), is(true));
+    }
+
+    @Test
+    void shouldHidePlayerWhenInExclusionList() {
+      properties.setProperty(PROPERTY_KEY, "Weather,NaturalDisaster");
+
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Weather"), is(false));
+    }
+
+    @Test
+    void shouldShowPlayerWhenNotInExclusionList() {
+      properties.setProperty(PROPERTY_KEY, "Weather,NaturalDisaster");
+
+      assertThat(
+          MapData.isNotInCommaSeparatedProperty(properties, PROPERTY_KEY, "Germany"), is(true));
+    }
+  }
 }

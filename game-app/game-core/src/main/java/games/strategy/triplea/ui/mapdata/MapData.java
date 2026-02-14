@@ -88,6 +88,8 @@ public class MapData {
 
   @NonNls private static final String PROPERTY_DONT_DRAW_UNITS = "dont_draw_units";
   @NonNls private static final String PROPERTY_DONT_SHOW_PLAYERS = "dont_show_players";
+  @NonNls
+  private static final String PROPERTY_DONT_SHOW_IN_TECH = "player.doNotShowInTechTable";
 
   @NonNls
   private static final String PROPERTY_MAP_SMALLMAPTERRITORYSATURATION =
@@ -149,6 +151,7 @@ public class MapData {
   private Set<String> undrawnUnits;
   private Set<String> undrawnTerritoriesNames;
   private Set<String> hiddenPlayers;
+  private Set<String> hiddenTechPlayers;
   private final Map<Image, List<Point>> decorations = new HashMap<>();
   private final Map<String, Image> territoryNameImages = new HashMap<>();
   // Use a synchronized map since getTerritoryEffectImage() is called from multiple threads.
@@ -394,6 +397,19 @@ public class MapData {
       hiddenPlayers = new HashSet<>(List.of(property.split(",")));
     }
     return !hiddenPlayers.contains(playerName);
+  }
+
+  /**
+   * Returns whether the player with the given name should be shown in the Tech tab. Mapmakers can
+   * hide dummy players by listing them in the {@code player.doNotShowInTechTable} property in {@code
+   * map.properties}.
+   */
+  public boolean shouldShowInTech(final String playerName) {
+    if (hiddenTechPlayers == null) {
+      final String property = mapProperties.getProperty(PROPERTY_DONT_SHOW_IN_TECH, "");
+      hiddenTechPlayers = new HashSet<>(List.of(property.split(",")));
+    }
+    return !hiddenTechPlayers.contains(playerName);
   }
 
   /**
