@@ -26,6 +26,9 @@ public class GamePlayer extends NamedAttachable implements NamedUnitHolder {
   private static final long serialVersionUID = -2284878450555315947L;
 
   @NonNls private static final String DEFAULT_TYPE_AI = "AI";
+  @NonNls private static final String DEFAULT_TYPE_HARD_AI = "HardAI";
+  @NonNls private static final String DEFAULT_TYPE_FAST_AI = "FastAI";
+  @NonNls private static final String DEFAULT_TYPE_WEAK_AI = "WeakAI";
   @NonNls private static final String DEFAULT_TYPE_DOES_NOTHING = "DoesNothing";
 
   @RemoveOnNextMajorRelease @Deprecated
@@ -208,7 +211,15 @@ public class GamePlayer extends NamedAttachable implements NamedUnitHolder {
   }
 
   public boolean isDefaultTypeAi() {
-    return DEFAULT_TYPE_AI.equals(defaultType);
+    return DEFAULT_TYPE_AI.equals(defaultType) || DEFAULT_TYPE_HARD_AI.equals(defaultType);
+  }
+
+  public boolean isDefaultTypeFastAi() {
+    return DEFAULT_TYPE_FAST_AI.equals(defaultType);
+  }
+
+  public boolean isDefaultTypeWeakAi() {
+    return DEFAULT_TYPE_WEAK_AI.equals(defaultType);
   }
 
   public boolean isDefaultTypeDoesNothing() {
