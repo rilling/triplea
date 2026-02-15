@@ -376,7 +376,11 @@ public class ServerSetupPanel extends SetupPanel implements IRemoteModelListener
       }
     }
 
-    if (player != null && player.isDefaultTypeAi()) {
+    if (player != null && player.isDefaultTypeFastAi()) {
+      return PlayerTypes.FAST_AI;
+    } else if (player != null && player.isDefaultTypeWeakAi()) {
+      return PlayerTypes.WEAK_AI;
+    } else if (player != null && player.isDefaultTypeAi()) {
       return PlayerTypes.PRO_AI;
     } else if (player != null && player.isDefaultTypeDoesNothing()) {
       return HeadedPlayerTypes.DOES_NOTHING_PLAYER;
