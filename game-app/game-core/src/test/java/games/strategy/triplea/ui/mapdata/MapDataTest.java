@@ -81,6 +81,7 @@ final class MapDataTest {
           is(false));
     }
   }
+
   @Nested
   final class ShouldShowInTechTest {
     private static final String PROPERTY_KEY = "player.doNotShowInTechTable";
