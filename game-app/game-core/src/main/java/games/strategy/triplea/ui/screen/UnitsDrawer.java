@@ -85,14 +85,6 @@ public class UnitsDrawer extends AbstractDrawable {
     // If there are too many Units at one point a black line is drawn to make clear which units
     // belong to where
     final var factory = uiContext.getUnitImageFactory();
-    if (overflow) {
-      graphics.setColor(Color.BLACK);
-      graphics.fillRect(
-          placementPoint.x - bounds.x - 2,
-          placementPoint.y - bounds.y + factory.getUnitImageHeight(),
-          factory.getUnitImageWidth() + 2,
-          3);
-    }
     final GamePlayer owner = unitCategory.getOwner();
     final boolean damagedImage =
         unitCategory.getDamaged() > 0 || unitCategory.getBombingDamage() > 0;
@@ -105,8 +97,18 @@ public class UnitsDrawer extends AbstractDrawable {
             .damaged(damagedImage)
             .disabled(unitCategory.getDisabled())
             .build();
-
     final Image img = factory.getImage(imageKey);
+    if (overflow) {
+      final int drawnWidth = img.getWidth(null);
+      final int lineWidth = (drawnWidth > 0 ? drawnWidth : factory.getUnitImageWidth()) + 2;
+      graphics.setColor(Color.BLACK);
+      graphics.fillRect(
+          placementPoint.x - bounds.x - 2,
+          placementPoint.y - bounds.y + factory.getUnitImageHeight(),
+          lineWidth,
+          3);
+    }
+
     final int maxRange = new Unit(unitType, owner, data).getMaxMovementAllowed();
 
     drawUnitByDrawMode(bounds, graphics, maxRange, owner, img);
