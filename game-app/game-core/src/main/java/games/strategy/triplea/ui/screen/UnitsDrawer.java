@@ -65,11 +65,33 @@ public class UnitsDrawer extends AbstractDrawable {
 
   public Rectangle getPlacementRectangle() {
     UnitImageFactory factory = uiContext.getUnitImageFactory();
-    return new Rectangle(
-        placementPoint.x,
-        placementPoint.y,
-        factory.getUnitImageWidth(),
-        factory.getUnitImageHeight());
+
+    final GamePlayer owner = unitCategory.getOwner();
+    final boolean damagedImage =
+            unitCategory.getDamaged() > 0 || unitCategory.getBombingDamage() > 0;
+    final UnitType unitType = unitCategory.getType();
+
+    final var imageKey =
+            ImageKey.builder()
+                    .type(unitType)
+                    .player(owner)
+                    .damaged(damagedImage)
+                    .disabled(unitCategory.getDisabled())
+                    .build();
+
+    final Image img = factory.getImage(imageKey);
+
+
+    int width = img.getWidth(null);
+    int height = img.getHeight(null);
+
+    // Fallback to default values if image loading fails
+    if (width <= 0 || height <= 0) {
+      width = factory.getUnitImageWidth();
+      height = factory.getUnitImageHeight();
+    }
+
+    return new Rectangle(placementPoint.x, placementPoint.y, width, height);
   }
 
   public String getPlayer() {
