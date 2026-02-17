@@ -14,7 +14,15 @@ import games.strategy.triplea.image.UnitImageFactory.ImageKey;
 import games.strategy.triplea.ui.UiContext;
 import games.strategy.triplea.ui.mapdata.MapData;
 import games.strategy.triplea.util.TuvUtils;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +55,13 @@ public class UnitStatsTable {
                 .collect(Collectors.toSet());
 
     for (final Map.Entry<GamePlayer, List<UnitType>> entry : playerUnitTypes.entrySet()) {
-      int lineIndex = 0;
+
       final GamePlayer player = entry.getKey();
 
       if (player != null && hiddenPlayers.contains(player.getName())) {
         continue;
       }
-
+      int lineIndex = 0;
       hints.append("<p><table border=\"1\" bgcolor=\"" + strColorGrey + "\">");
       hints
           .append(

@@ -14,7 +14,6 @@ import games.strategy.triplea.delegate.TechTracker;
 import java.awt.Component;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -170,7 +169,8 @@ class TechnologyPanel extends JPanel implements GameDataChangeListener {
       // copy so that the object doesn't change underneath us
       final GameData gameDataSync = TechnologyPanel.this.gameData;
       try (GameData.Unlocker ignored = gameDataSync.acquireReadLock()) {
-        final int numTechs = TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier()).size();
+        final int numTechs =
+            TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier()).size();
         final int tableColNumber = colList.length + 1; // Icons need one more row
         if (gameDataSync.getResourceList().getResourceOptional(Constants.TECH_TOKENS).isPresent()) {
           useToken = true;
@@ -186,7 +186,8 @@ class TechnologyPanel extends JPanel implements GameDataChangeListener {
         dataTable[row][0] = "Tokens";
         row++;
       }
-      final List<TechAdvance> techAdvances = TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier(), null);
+      final List<TechAdvance> techAdvances =
+          TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier(), null);
       for (final TechAdvance tech : techAdvances) {
         rowMap.put(tech.getName(), row);
         dataTable[row][0] = tech.getName();
@@ -206,10 +207,11 @@ class TechnologyPanel extends JPanel implements GameDataChangeListener {
 
     private void initColList() {
       final List<GamePlayer> players = gameData.getPlayerList().getPlayers();
-      colList = players.stream()
-          .map(GamePlayer::getName)
-          .filter(name -> uiContext == null || uiContext.getMapData().shouldShowInTech(name))
-          .toArray(String[]::new);
+      colList =
+          players.stream()
+              .map(GamePlayer::getName)
+              .filter(name -> uiContext == null || uiContext.getMapData().shouldShowInTech(name))
+              .toArray(String[]::new);
       Arrays.sort(colList);
     }
 
@@ -231,16 +233,18 @@ class TechnologyPanel extends JPanel implements GameDataChangeListener {
             final int tokens = playerID.getResources().getQuantity(Constants.TECH_TOKENS);
             data[row][col] = Integer.toString(tokens);
           }
-          final List<TechAdvance> advancesAll = TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier());
-          final List<TechAdvance> has = TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier(), playerID);
+          final List<TechAdvance> advancesAll =
+              TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier());
+          final List<TechAdvance> has =
+              TechAdvance.getTechAdvances(gameDataSync.getTechnologyFrontier(), playerID);
           for (final TechAdvance advance : advancesAll) {
             if (!has.contains(advance)) {
               row = rowMap.get(advance.getName());
               data[row][col] = SIGN_TECH_NOT_ENABLED;
             }
           }
-          for (final TechAdvance advance : TechTracker.getCurrentTechAdvances(playerID,
-              gameDataSync.getTechnologyFrontier())) {
+          for (final TechAdvance advance :
+              TechTracker.getCurrentTechAdvances(playerID, gameDataSync.getTechnologyFrontier())) {
             row = rowMap.get(advance.getName());
             data[row][col] = SIGN_TECH_ENABLED;
           }
