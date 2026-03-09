@@ -180,7 +180,7 @@ class ForumPosterEditorViewModel {
     return forumTokenExists ? Strings.repeat("*", DUMMY_PASSWORD_LENGTH) : "";
   }
 
-  public String getForumSelection() {
+  public synchronized String getForumSelection() {
     Preconditions.checkNotNull(forumSelection, "Forum selection should never be null");
     return forumSelection;
   }
