@@ -63,6 +63,36 @@ class SelectMainBattleCasualtiesTest {
     return diceRoll;
   }
 
+  private SelectCasualties buildRestrictedTransportSelectCasualties(
+    final List<Unit> nonTransportUnits, final int nonTransportHitPoints, final int hits) {
+  when(battleState.getGameData().getProperties().get(TRANSPORT_CASUALTIES_RESTRICTED, false))
+      .thenReturn(true);
+  when(battleState.getGameData().getProperties().get(EDIT_MODE)).thenReturn(false);
+
+  nonTransportUnits.forEach(
+      unit -> {
+        final UnitAttachment unitAttachment =
+            (UnitAttachment) unit.getType().getAttachment(UNIT_ATTACHMENT_NAME);
+        when(unitAttachment.getHitPoints()).thenReturn(nonTransportHitPoints);
+      });
+
+  final List<Unit> targetUnits = new ArrayList<>(nonTransportUnits);
+  targetUnits.add(givenUnitSeaTransport());
+
+  final FiringGroup firingGroup =
+      FiringGroup.groupBySuicideOnHit(UNITS, List.of(firingUnit), targetUnits).get(0);
+
+  final FireRoundState fireRoundState = new FireRoundState();
+  fireRoundState.setDice(givenDiceRollWithHits(hits));
+
+  return new SelectCasualties(
+      battleState,
+      BattleState.Side.OFFENSE,
+      firingGroup,
+      fireRoundState,
+      (arg1, arg2) -> new CasualtyDetails());
+}
+
   @Test
   @DisplayName("Edit mode always calls the select function")
   @SuppressWarnings("unchecked")
@@ -223,46 +253,25 @@ class SelectMainBattleCasualtiesTest {
 
       final List<Unit> nonTransportUnits = List.of(givenAnyUnit(), givenAnyUnit());
 
-      nonTransportUnits.forEach(
-          unit -> {
-            final UnitAttachment unitAttachment =
-                (UnitAttachment) unit.getType().getAttachment(UNIT_ATTACHMENT_NAME);
-            when(unitAttachment.getHitPoints()).thenReturn(2);
-          });
-
-      final List<Unit> targetUnits = new ArrayList<>(nonTransportUnits);
-      targetUnits.add(givenUnitSeaTransport());
-
-      final FiringGroup firingGroup =
-          FiringGroup.groupBySuicideOnHit(UNITS, List.of(firingUnit), targetUnits).get(0);
-
-      final FireRoundState fireRoundState = new FireRoundState();
-      fireRoundState.setDice(givenDiceRollWithHits(3));
-
       final SelectCasualties selectCasualties =
-          new SelectCasualties(
-              battleState,
-              BattleState.Side.OFFENSE,
-              firingGroup,
-              fireRoundState,
-              (arg1, arg2) -> new CasualtyDetails());
+      buildRestrictedTransportSelectCasualties(nonTransportUnits, 2, 3);
 
-      final SelectMainBattleCasualties.Select selectFunction =
-          mock(SelectMainBattleCasualties.Select.class);
-      final CasualtyDetails expected = new CasualtyDetails();
-      when(selectFunction.apply(any(), any(), anyCollection(), anyInt())).thenReturn(expected);
+  final SelectMainBattleCasualties.Select selectFunction =
+      mock(SelectMainBattleCasualties.Select.class);
+  final CasualtyDetails expected = new CasualtyDetails();
+  when(selectFunction.apply(any(), any(), anyCollection(), anyInt())).thenReturn(expected);
 
-      final CasualtyDetails details =
-          new SelectMainBattleCasualties(selectFunction).apply(delegateBridge, selectCasualties);
+  final CasualtyDetails details =
+      new SelectMainBattleCasualties(selectFunction).apply(delegateBridge, selectCasualties);
 
-      assertThat(details, is(expected));
+  assertThat(details, is(expected));
 
-      verify(selectFunction)
-          .apply(
-              eq(delegateBridge),
-              eq(selectCasualties),
-              (Collection<Unit>) argThat(containsInAnyOrder(nonTransportUnits.toArray())),
-              eq(3));
+  verify(selectFunction)
+      .apply(
+          eq(delegateBridge),
+          eq(selectCasualties),
+          (Collection<Unit>) argThat(containsInAnyOrder(nonTransportUnits.toArray())),
+          eq(3));
     }
 
     @Test
@@ -276,39 +285,19 @@ class SelectMainBattleCasualtiesTest {
 
       final List<Unit> nonTransportUnits = List.of(givenAnyUnit(), givenAnyUnit());
 
-      nonTransportUnits.forEach(
-          unit -> {
-            final UnitAttachment unitAttachment =
-                (UnitAttachment) unit.getType().getAttachment(UNIT_ATTACHMENT_NAME);
-            when(unitAttachment.getHitPoints()).thenReturn(2);
-          });
+      final List<Unit> nonTransportUnits = List.of(givenAnyUnit(), givenAnyUnit());
+    final SelectCasualties selectCasualties =
+        buildRestrictedTransportSelectCasualties(nonTransportUnits, 2, 4);
 
-      final List<Unit> targetUnits = new ArrayList<>(nonTransportUnits);
-      targetUnits.add(givenUnitSeaTransport());
+    final SelectMainBattleCasualties.Select selectFunction =
+        mock(SelectMainBattleCasualties.Select.class);
 
-      final FiringGroup firingGroup =
-          FiringGroup.groupBySuicideOnHit(UNITS, List.of(firingUnit), targetUnits).get(0);
+    final CasualtyDetails details =
+        new SelectMainBattleCasualties(selectFunction).apply(delegateBridge, selectCasualties);
 
-      final FireRoundState fireRoundState = new FireRoundState();
-      fireRoundState.setDice(givenDiceRollWithHits(4));
-
-      final SelectCasualties selectCasualties =
-          new SelectCasualties(
-              battleState,
-              BattleState.Side.OFFENSE,
-              firingGroup,
-              fireRoundState,
-              (arg1, arg2) -> new CasualtyDetails());
-
-      final SelectMainBattleCasualties.Select selectFunction =
-          mock(SelectMainBattleCasualties.Select.class);
-
-      final CasualtyDetails details =
-          new SelectMainBattleCasualties(selectFunction).apply(delegateBridge, selectCasualties);
-
-      assertThat(details.getKilled().toArray(), is(nonTransportUnits.toArray()));
-      assertThat(details.getAutoCalculated(), is(true));
-      verify(selectFunction, never()).apply(any(), any(), anyCollection(), anyInt());
+    assertThat(details.getKilled().toArray(), is(nonTransportUnits.toArray()));
+    assertThat(details.getAutoCalculated(), is(true));
+    verify(selectFunction, never()).apply(any(), any(), anyCollection(), anyInt());
     }
 
     @Test
