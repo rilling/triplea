@@ -1841,57 +1841,65 @@ public class BattleStepsTest {
   @Test
   @DisplayName("Verify partial amphibious attack can not withdraw if all units were amphibious")
   void partialAmphibiousAttackCanNotWithdrawIfHasAllAmphibious() {
-    final Unit unit1 = givenAnyUnit();
-    final Unit unit2 = givenAnyUnit();
-    final Unit unit3 = givenAnyUnit();
-    when(unit1.getWasAmphibious()).thenReturn(true);
-    when(unit3.getWasAmphibious()).thenReturn(true);
+	  final Unit unit1 = givenAnyUnit();
+	  final Unit unit2 = givenAnyUnit();
+	  final Unit unit3 = givenAnyUnit();
 
-    final List<String> steps =
-        givenBattleSteps(
-            givenBattleStateBuilder()
-                .gameData(
-                    givenGameDataWithLenientProperties()
-                        .withAlliedAirIndependent(true)
-                        .withPartialAmphibiousRetreat(true)
-                        .build())
-                .attacker(attacker)
-                .defender(defender)
-                .attackingUnits(List.of(unit1, unit3))
-                .defendingUnits(List.of(unit2))
-                .battleSite(battleSite)
-                .amphibious(true)
-                .build());
+	  givenUnitsAreAmphibious(unit1, unit3);
 
-    assertThat(steps, is(basicFightStepStrings()));
-  }
+	  final List<String> steps = givenAmphibiousBattleSteps(unit1, unit2, unit3);
 
+	  assertThat(steps, is(basicFightStepStrings()));
+	}
+  //------------------------------------------------------------------
+  private List<String> givenAmphibiousBattleSteps(Unit unit1, Unit unit2, Unit unit3) {
+	  return givenBattleSteps(
+	      givenBattleStateBuilder()
+	          .gameData(
+	              givenGameDataWithLenientProperties()
+	                  .withAlliedAirIndependent(true)
+	                  .withPartialAmphibiousRetreat(true)
+	                  .build())
+	          .attacker(attacker)
+	          .defender(defender)
+	          .attackingUnits(List.of(unit1, unit3))
+	          .defendingUnits(List.of(unit2))
+	          .battleSite(battleSite)
+	          .amphibious(true)
+	          .build());
+	}
+  
+  private void givenUnitsAreAmphibious(Unit... units) {
+	  for (Unit unit : units) {
+	    when(unit.getWasAmphibious()).thenReturn(true);
+	  }
+	}
+  
+  
+  
+  
+  
+  //------------------------------------------------------------------
+  
   @Test
   @DisplayName(
       "Verify partial amphibious attack can not withdraw if "
           + "partial amphibious withdrawal not allowed")
-  void partialAmphibiousAttackCanNotWithdrawIfNotAllowed() {
-    final Unit unit1 = givenAnyUnit();
-    final Unit unit2 = givenAnyUnit();
-    final Unit unit3 = givenAnyUnit();
-    final List<String> steps =
-        givenBattleSteps(
-            givenBattleStateBuilder()
-                .gameData(
-                    givenGameDataWithLenientProperties().withAlliedAirIndependent(true).build())
-                .attacker(attacker)
-                .defender(defender)
-                .attackingUnits(List.of(unit1, unit3))
-                .defendingUnits(List.of(unit2))
-                .battleSite(battleSite)
-                .amphibious(true)
-                .build());
+  void attackingPlanesCanWithdrawPartialAmphibiousAndAmphibious() {
+	  final Unit unit1 = givenUnitIsAir();
+	  final Unit unit2 = givenAnyUnit();
+	  final Unit unit3 = givenAnyUnit();
 
-    assertThat(steps, is(basicFightStepStrings()));
-    // should never check for amphibious units
-    verify(unit1, never()).getWasAmphibious();
-  }
+	  when(unit3.getWasAmphibious()).thenReturn(true);
 
+	  final List<String> steps = givenAmphibiousBattleSteps(unit1, unit2, unit3);
+
+	  assertThat(
+	      steps,
+	      is(mergeSteps(basicFightStepStrings(), List.of(attacker.getName() + ATTACKER_WITHDRAW))));
+	}
+  
+  
   @Test
   @DisplayName("Verify attacker planes can withdraw if ww2v2 and amphibious")
   void attackingPlanesCanWithdrawWW2v2AndAmphibious() {
