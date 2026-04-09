@@ -1,16 +1,15 @@
 package games.strategy.triplea.delegate;
 
-import static games.strategy.triplea.delegate.GameDataTestUtil.bomber;
-import static games.strategy.triplea.delegate.GameDataTestUtil.british;
-import static games.strategy.triplea.delegate.GameDataTestUtil.territory;
-import static games.strategy.triplea.delegate.MockDelegateBridge.newDelegateBridge;
-import static games.strategy.triplea.delegate.MockDelegateBridge.thenGetRandomShouldHaveBeenCalled;
-import static games.strategy.triplea.delegate.MockDelegateBridge.whenGetRandom;
-import static games.strategy.triplea.delegate.MockDelegateBridge.withValues;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import org.junit.jupiter.api.Test;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import org.triplea.java.collections.CollectionUtils;
 
 import games.strategy.engine.data.GamePlayer;
 import games.strategy.engine.data.GameState;
@@ -23,16 +22,18 @@ import games.strategy.engine.delegate.IDelegateBridge;
 import games.strategy.triplea.Constants;
 import games.strategy.triplea.Properties;
 import games.strategy.triplea.attachments.UnitAttachment;
+import static games.strategy.triplea.delegate.GameDataTestUtil.bomber;
+import static games.strategy.triplea.delegate.GameDataTestUtil.british;
+import static games.strategy.triplea.delegate.GameDataTestUtil.territory;
+import static games.strategy.triplea.delegate.MockDelegateBridge.newDelegateBridge;
+import static games.strategy.triplea.delegate.MockDelegateBridge.thenGetRandomShouldHaveBeenCalled;
+import static games.strategy.triplea.delegate.MockDelegateBridge.whenGetRandom;
+import static games.strategy.triplea.delegate.MockDelegateBridge.withValues;
 import games.strategy.triplea.delegate.battle.BattleState;
 import games.strategy.triplea.delegate.battle.StrategicBombingRaidBattle;
 import games.strategy.triplea.delegate.dice.RollDiceFactory;
 import games.strategy.triplea.delegate.power.calculator.CombatValueBuilder;
 import games.strategy.triplea.xml.TestMapGameData;
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-import org.junit.jupiter.api.Test;
-import org.triplea.java.collections.CollectionUtils;
 
 class DiceRollTest {
   private GameState gameData = TestMapGameData.LHTR.getGameData();
@@ -945,20 +946,11 @@ class DiceRollTest {
 
   @Test
   void testHeavyBombersLhtr() {
-    gameData.getProperties().set(Constants.LHTR_HEAVY_BOMBERS, Boolean.TRUE);
     final GamePlayer british = GameDataTestUtil.british(gameData);
     final IDelegateBridge testDelegateBridge = newDelegateBridge(british);
-    TechTracker.addAdvance(
-        british,
-        testDelegateBridge,
-        TechAdvance.findAdvance(
-            TechAdvance.TECH_PROPERTY_HEAVY_BOMBER, gameData.getTechnologyFrontier(), british));
-    final List<Unit> bombers =
-        gameData
-            .getMap()
-            .getTerritoryOrNull("United Kingdom")
-            .getUnitCollection()
-            .getMatches(Matches.unitIsStrategicBomber());
+
+    final List<Unit> bombers = setupHeavyBombersTest(british, testDelegateBridge);
+
     whenGetRandom(testDelegateBridge).thenAnswer(withValues(2, 3));
     final Territory germany = gameData.getMap().getTerritoryOrNull("Germany");
     final DiceRoll dice =
@@ -1028,20 +1020,11 @@ class DiceRollTest {
 
   @Test
   void testHeavyBombersDefendLhtr() {
-    gameData.getProperties().set(Constants.LHTR_HEAVY_BOMBERS, Boolean.TRUE);
     final GamePlayer british = GameDataTestUtil.british(gameData);
     final IDelegateBridge testDelegateBridge = newDelegateBridge(british);
-    TechTracker.addAdvance(
-        british,
-        testDelegateBridge,
-        TechAdvance.findAdvance(
-            TechAdvance.TECH_PROPERTY_HEAVY_BOMBER, gameData.getTechnologyFrontier(), british));
-    final List<Unit> bombers =
-        gameData
-            .getMap()
-            .getTerritoryOrNull("United Kingdom")
-            .getUnitCollection()
-            .getMatches(Matches.unitIsStrategicBomber());
+
+    final List<Unit> bombers = setupHeavyBombersTest(british, testDelegateBridge);
+
     whenGetRandom(testDelegateBridge).thenAnswer(withValues(0, 1));
     final Territory germany = gameData.getMap().getTerritoryOrNull("Germany");
     final DiceRoll dice =
@@ -1067,6 +1050,24 @@ class DiceRollTest {
     assertThat(dice.getRolls(1).get(0).getType(), is(Die.DieType.HIT));
     assertThat(dice.getRolls(1).get(1).getType(), is(Die.DieType.IGNORED));
   }
+
+  private List<Unit> setupHeavyBombersTest(GamePlayer player, IDelegateBridge bridge) {
+    gameData.getProperties().set(Constants.LHTR_HEAVY_BOMBERS, Boolean.TRUE);
+
+    TechTracker.addAdvance(
+        player,
+        bridge,
+        TechAdvance.findAdvance(
+            TechAdvance.TECH_PROPERTY_HEAVY_BOMBER,
+            gameData.getTechnologyFrontier(),
+            player));
+
+    return gameData
+        .getMap()
+        .getTerritoryOrNull("United Kingdom")
+        .getUnitCollection()
+        .getMatches(Matches.unitIsStrategicBomber());
+}
 
   @Test
   void testSbrRolls() {
