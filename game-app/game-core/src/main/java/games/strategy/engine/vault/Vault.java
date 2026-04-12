@@ -35,7 +35,7 @@ import org.jetbrains.annotations.NonNls;
 public class Vault {
   private static final RemoteName VAULT_CHANNEL =
       new RemoteName("games.strategy.engine.vault.IServerVault.VAULT_CHANNEL", IRemoteVault.class);
-  @NonNls private static final String ALGORITHM = "DES";
+  @NonNls private static final String ALGORITHM = "AES/GCM/NoPadding";
   // 0xCAFEBABE
   // we encrypt both this value and data when we encrypt data.
   // when decrypting we ensure that KNOWN_VAL is correct and thus guarantee that we are being given
@@ -74,14 +74,20 @@ public class Vault {
           }
           final SecretKey key = bytesToKey(secretKeyBytes);
           final Cipher cipher;
+          // Correction by Ali and Omar
           try {
-            cipher = Cipher.getInstance(ALGORITHM);
-            cipher.init(Cipher.DECRYPT_MODE, key);
-          } catch (final NoSuchAlgorithmException
-              | InvalidKeyException
-              | NoSuchPaddingException e) {
-            throw new IllegalStateException(e);
-          }
+        	    cipher = Cipher.getInstance(ALGORITHM);
+
+        	    GCMParameterSpec spec = new GCMParameterSpec(128, iv); // iv must come with encrypted data
+        	    cipher.init(Cipher.DECRYPT_MODE, key, spec);
+
+          	} catch (NoSuchAlgorithmException
+        	        | InvalidKeyException
+        	        | NoSuchPaddingException
+        	        | InvalidAlgorithmParameterException e) {
+        	    throw new IllegalStateException(e);
+        		}
+          
           final byte[] encrypted = unverifiedValues.remove(id);
           final byte[] decrypted;
           try {
