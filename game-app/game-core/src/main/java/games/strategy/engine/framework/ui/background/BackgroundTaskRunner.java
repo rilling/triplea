@@ -22,10 +22,13 @@ import org.triplea.swing.SwingAction;
 /** Provides methods for running tasks in the background to avoid blocking the UI. */
 @UtilityClass
 public final class BackgroundTaskRunner {
-  @Getter private static JFrame mainFrame;
+  @Getter
+  @SuppressWarnings("MS_CANNOT_BE_FINAL")
+  private static JFrame mainFrame;
 
   public static void setMainFrame(final JFrame mainFrame) {
     checkState(BackgroundTaskRunner.mainFrame == null);
+    checkNotNull(mainFrame);
     BackgroundTaskRunner.mainFrame = mainFrame;
   }
 
@@ -44,17 +47,17 @@ public final class BackgroundTaskRunner {
    */
   public static void runInBackground(final String message, final Runnable backgroundAction) {
     Interruptibles.await(
-        () ->
-            SwingAction.invokeAndWait(
-                () ->
-                    Interruptibles.await(
-                        () ->
-                            runInBackgroundAndReturn(
-                                message,
-                                () -> {
-                                  backgroundAction.run();
-                                  return null;
-                                }))));
+            () ->
+                    SwingAction.invokeAndWait(
+                            () ->
+                                    Interruptibles.await(
+                                            () ->
+                                                    runInBackgroundAndReturn(
+                                                            message,
+                                                            () -> {
+                                                              backgroundAction.run();
+                                                              return null;
+                                                            }))));
   }
 
   /**
@@ -74,15 +77,15 @@ public final class BackgroundTaskRunner {
    *     action to complete.
    */
   public static <T> T runInBackgroundAndReturn(
-      final String message, final Supplier<T> backgroundAction) throws InterruptedException {
+          final String message, final Supplier<T> backgroundAction) throws InterruptedException {
     return runInBackgroundAndReturn(message, backgroundAction::get, null, RuntimeException.class);
   }
 
   public static <T> T runInBackgroundAndReturn(
-      Consumer<T> runOnEdtBeforeDialogClose, String message, Supplier<T> backgroundAction)
-      throws InterruptedException {
+          Consumer<T> runOnEdtBeforeDialogClose, String message, Supplier<T> backgroundAction)
+          throws InterruptedException {
     return runInBackgroundAndReturn(
-        message, backgroundAction::get, runOnEdtBeforeDialogClose, RuntimeException.class);
+            message, backgroundAction::get, runOnEdtBeforeDialogClose, RuntimeException.class);
   }
 
   /**
@@ -109,11 +112,11 @@ public final class BackgroundTaskRunner {
    *     action to complete.
    */
   public static <T, E extends Exception> T runInBackgroundAndReturn(
-      final String message,
-      final ThrowingSupplier<T, E> backgroundAction,
-      final Consumer<T> runOnEdtBeforeDialogClose,
-      final Class<E> exceptionType)
-      throws E, InterruptedException {
+          final String message,
+          final ThrowingSupplier<T, E> backgroundAction,
+          final Consumer<T> runOnEdtBeforeDialogClose,
+          final Class<E> exceptionType)
+          throws E, InterruptedException {
     checkState(SwingUtilities.isEventDispatchThread());
     checkNotNull(message);
     checkNotNull(backgroundAction);
@@ -123,29 +126,29 @@ public final class BackgroundTaskRunner {
     final AtomicReference<Throwable> exceptionRef = new AtomicReference<>();
     final WaitDialog waitDialog = new WaitDialog(mainFrame, message);
     final SwingWorker<T, Void> worker =
-        new SwingWorker<>() {
-          @Override
-          protected T doInBackground() throws Exception {
-            return backgroundAction.get();
-          }
+            new SwingWorker<>() {
+              @Override
+              protected T doInBackground() throws Exception {
+                return backgroundAction.get();
+              }
 
-          @Override
-          protected void done() {
-            try {
-              T t = get();
-              resultRef.set(t);
-              Optional.ofNullable(runOnEdtBeforeDialogClose).ifPresent(c -> c.accept(t));
-            } catch (final ExecutionException e) {
-              exceptionRef.set(e.getCause());
-            } catch (final InterruptedException e) {
-              Thread.currentThread().interrupt();
-              exceptionRef.set(e);
-            } finally {
-              waitDialog.setVisible(false);
-              waitDialog.dispose();
-            }
-          }
-        };
+              @Override
+              protected void done() {
+                try {
+                  T t = get();
+                  resultRef.set(t);
+                  Optional.ofNullable(runOnEdtBeforeDialogClose).ifPresent(c -> c.accept(t));
+                } catch (final ExecutionException e) {
+                  exceptionRef.set(e.getCause());
+                } catch (final InterruptedException e) {
+                  Thread.currentThread().interrupt();
+                  exceptionRef.set(e);
+                } finally {
+                  waitDialog.setVisible(false);
+                  waitDialog.dispose();
+                }
+              }
+            };
     worker.execute();
     waitDialog.setVisible(true);
 
