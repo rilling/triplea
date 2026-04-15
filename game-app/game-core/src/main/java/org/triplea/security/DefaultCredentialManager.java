@@ -1,9 +1,5 @@
 package org.triplea.security;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Splitter;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.StandardCharsets;
@@ -14,13 +10,19 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.prefs.Preferences;
+
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.jetbrains.annotations.NonNls;
+
+import com.google.common.annotations.VisibleForTesting;
+import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Splitter;
 
 /**
  * Default implementation of {@link CredentialManager}.
@@ -34,7 +36,7 @@ final class DefaultCredentialManager implements CredentialManager {
   @VisibleForTesting @NonNls
   static final String PREFERENCE_KEY_MASTER_PASSWORD = "DEFAULT_CREDENTIAL_MANAGER_MASTER_PASSWORD";
 
-  @NonNls private static final String CIPHER_ALGORITHM = "AES";
+  @NonNls private static final String CIPHER_ALGORITHM = "AES/CBC/PKCS5Padding";
 
   private final char[] masterPassword;
 
