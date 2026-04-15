@@ -1,4 +1,4 @@
-FROM eclipse-temurin:25
+FROM eclipse-temurin:26
 
 ENV BOT_PORT_NUMBER=4000
 EXPOSE $BOT_PORT_NUMBER
