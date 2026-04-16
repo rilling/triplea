@@ -17,6 +17,7 @@ public class XmlScanner {
 
   public XmlScanner(final InputStream inputStream) throws XMLStreamException {
     final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+    inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
     xmlStreamReader = inputFactory.createXMLStreamReader(inputStream);
   }
 
