@@ -74,19 +74,12 @@ public class Vault {
           }
           final SecretKey key = bytesToKey(secretKeyBytes);
           final Cipher cipher;
-          // Correction by Ali and Omar
           try {
-        	    cipher = Cipher.getInstance(ALGORITHM);
-
-        	    GCMParameterSpec spec = new GCMParameterSpec(128, iv); // iv must come with encrypted data
-        	    cipher.init(Cipher.DECRYPT_MODE, key, spec);
-
-          	} catch (NoSuchAlgorithmException
-        	        | InvalidKeyException
-        	        | NoSuchPaddingException
-        	        | InvalidAlgorithmParameterException e) {
-        	    throw new IllegalStateException(e);
-        		}
+            cipher = Cipher.getInstance(ALGORITHM);
+            cipher.init(Cipher.DECRYPT_MODE, key);
+          } catch (final NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException e) {
+            throw new IllegalStateException(e);
+          }
           
           final byte[] encrypted = unverifiedValues.remove(id);
           final byte[] decrypted;
