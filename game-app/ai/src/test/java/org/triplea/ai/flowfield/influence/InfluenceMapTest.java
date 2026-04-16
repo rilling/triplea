@@ -325,64 +325,11 @@ class InfluenceMapTest {
                 return List.of();
               }
             });
-    final GameData gameData = givenGameData().build();
-    when(gameData.getDiceSides()).thenReturn(6);
-    final UnitType unitType = new UnitType("test", gameData);
-    final UnitAttachment unitAttachment = new UnitAttachment("test", unitType, gameData);
-    unitType.addAttachment(UNIT_ATTACHMENT_NAME, unitAttachment);
-    unitAttachment.setDefense(1);
-    unitAttachment.setAttack(1);
-    final GamePlayer player = mock(GamePlayer.class);
-
-    final BattleDetails battleDetailsB =
-        new BattleDetails(
-            List.of(),
-            unitType.createTemp(100, player),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.OFFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.DEFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            List.of());
-    final BattleDetails battleDetailsE =
-        new BattleDetails(
-            List.of(),
-            unitType.createTemp(1, player),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.OFFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.DEFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            List.of());
-
-    final InfluenceMap influenceMap =
-        new InfluenceMap(
-            "suffix",
-            new InfluenceMapSetup("Test", 0.5, Map.of(territoryA, 100L)),
-            mapWithNeighbors,
-            t -> {
-              if (t.equals(territoryB)) {
-                return battleDetailsB;
-              } else if (t.equals(territoryE)) {
-                return battleDetailsE;
-              } else {
-                return BattleDetails.EMPTY_DETAILS;
-              }
-            });
+    final InfluenceMapResult result =
+    buildInfluenceMapWithTwoBattleDetails(
+        mapWithNeighbors, territoryA, territoryB, territoryE);
+    final InfluenceMap influenceMap = result.influenceMap();
+    final BattleDetails battleDetailsE = result.battleDetailsE();
 
     assertThat(
         "C's battle details by distance should contain battle details from E",
@@ -401,6 +348,66 @@ class InfluenceMapTest {
         influenceMap.getTerritories().get(territoryD).getInfluence(),
         is(12L));
   }
+
+  private record InfluenceMapResult(
+    InfluenceMap influenceMap,
+    BattleDetails battleDetailsB,
+    BattleDetails battleDetailsE) {}
+
+  private BattleDetails createBattleDetails(UnitType unitType, int unitCount, GamePlayer player) {
+  return new BattleDetails(
+      List.of(),
+      unitType.createTemp(unitCount, player),
+      CombatValueBuilder.mainCombatValue()
+          .side(BattleState.Side.OFFENSE)
+          .gameDiceSides(6)
+          .gameSequence(mock(GameSequence.class))
+          .lhtrHeavyBombers(false)
+          .supportAttachments(List.of()),
+      CombatValueBuilder.mainCombatValue()
+          .side(BattleState.Side.DEFENSE)
+          .gameDiceSides(6)
+          .gameSequence(mock(GameSequence.class))
+          .lhtrHeavyBombers(false)
+          .supportAttachments(List.of()),
+      List.of());
+}
+
+private InfluenceMapResult buildInfluenceMapWithTwoBattleDetails(
+    MapWithNeighbors mapWithNeighbors,
+    Territory territoryA,
+    Territory territoryB,
+    Territory territoryE) {
+
+  final GameData gameData = givenGameData().build();
+  when(gameData.getDiceSides()).thenReturn(6);
+  final UnitType unitType = new UnitType("test", gameData);
+  final UnitAttachment unitAttachment = new UnitAttachment("test", unitType, gameData);
+  unitType.addAttachment(UNIT_ATTACHMENT_NAME, unitAttachment);
+  unitAttachment.setDefense(1);
+  unitAttachment.setAttack(1);
+  final GamePlayer player = mock(GamePlayer.class);
+
+  final BattleDetails battleDetailsB = createBattleDetails(unitType, 100, player);
+  final BattleDetails battleDetailsE = createBattleDetails(unitType, 1, player);
+
+  final InfluenceMap influenceMap =
+      new InfluenceMap(
+          "suffix",
+          new InfluenceMapSetup("Test", 0.5, Map.of(territoryA, 100L)),
+          mapWithNeighbors,
+          t -> {
+            if (t.equals(territoryB)) {
+              return battleDetailsB;
+            } else if (t.equals(territoryE)) {
+              return battleDetailsE;
+            } else {
+              return BattleDetails.EMPTY_DETAILS;
+            }
+          });
+
+  return new InfluenceMapResult(influenceMap, battleDetailsB, battleDetailsE);
+}
 
   @Test
   @DisplayName(
@@ -437,64 +444,12 @@ class InfluenceMapTest {
                 return List.of();
               }
             });
-    final GameData gameData = givenGameData().build();
-    when(gameData.getDiceSides()).thenReturn(6);
-    final UnitType unitType = new UnitType("test", gameData);
-    final UnitAttachment unitAttachment = new UnitAttachment("test", unitType, gameData);
-    unitType.addAttachment(UNIT_ATTACHMENT_NAME, unitAttachment);
-    unitAttachment.setDefense(1);
-    unitAttachment.setAttack(1);
-    final GamePlayer player = mock(GamePlayer.class);
-
-    final BattleDetails battleDetailsB =
-        new BattleDetails(
-            List.of(),
-            unitType.createTemp(100, player),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.OFFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.DEFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            List.of());
-    final BattleDetails battleDetailsE =
-        new BattleDetails(
-            List.of(),
-            unitType.createTemp(1, player),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.OFFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            CombatValueBuilder.mainCombatValue()
-                .side(BattleState.Side.DEFENSE)
-                .gameDiceSides(6)
-                .gameSequence(mock(GameSequence.class))
-                .lhtrHeavyBombers(false)
-                .supportAttachments(List.of()),
-            List.of());
-
-    final InfluenceMap influenceMap =
-        new InfluenceMap(
-            "suffix",
-            new InfluenceMapSetup("Test", 0.5, Map.of(territoryA, 100L)),
-            mapWithNeighbors,
-            t -> {
-              if (t.equals(territoryB)) {
-                return battleDetailsB;
-              } else if (t.equals(territoryE)) {
-                return battleDetailsE;
-              } else {
-                return BattleDetails.EMPTY_DETAILS;
-              }
-            });
+    final InfluenceMapResult result =
+    buildInfluenceMapWithTwoBattleDetails(
+        mapWithNeighbors, territoryA, territoryB, territoryE);
+    final InfluenceMap influenceMap = result.influenceMap();
+    final BattleDetails battleDetailsB = result.battleDetailsB();
+    final BattleDetails battleDetailsE = result.battleDetailsE();
 
     assertThat(
         "D's battle details by distance should contain battle details from E",

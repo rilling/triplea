@@ -24,7 +24,7 @@ public final class DefaultSubstanceLookAndFeelManager implements SubstanceLookAn
   private static UIManager.LookAndFeelInfo newLookAndFeelInfoForSkin(final SkinInfo skinInfo) {
     return new UIManager.LookAndFeelInfo(
         "Substance " + skinInfo.getDisplayName(),
-        skinInfo.getClassName().replaceFirst("(?<=\\.)(\\w+)Skin$", "Substance$1LookAndFeel"));
+        skinInfo.getClassName().replaceFirst("(?<=\\.)(\\w++)Skin$", "Substance$1LookAndFeel"));
   }
 
   @Override

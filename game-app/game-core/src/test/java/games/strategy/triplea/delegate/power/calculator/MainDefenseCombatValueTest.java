@@ -216,10 +216,7 @@ class MainDefenseCombatValueTest {
       final MainDefenseCombatValue.MainDefenseStrength strength =
           new MainDefenseCombatValue.MainDefenseStrength(
               gameData.getSequence(), 6, List.of(territoryEffect), friendlySupport, enemySupport);
-      assertThat(
-          "Strength starts at 3, friendly adds 3, enemy removes 2, territory adds 1: total 5",
-          strength.getStrength(unit).getValue(),
-          is(5));
+      TestCombatUtils.assertStrengthValue(5, strength.getStrength(unit).getValue());
     }
 
     UnitSupportAttachment givenUnitSupportAttachment(
