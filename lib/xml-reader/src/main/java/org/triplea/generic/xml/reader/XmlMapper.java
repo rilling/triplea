@@ -24,6 +24,7 @@ public class XmlMapper implements Closeable {
 
   public XmlMapper(final InputStream inputStream) throws XmlParsingException {
     final XMLInputFactory inputFactory = XMLInputFactory.newInstance();
+    inputFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
     try {
       xmlStreamReader = inputFactory.createXMLStreamReader(inputStream);
     } catch (final XMLStreamException e) {
